@@ -4,6 +4,7 @@ model = dict(
     type='AnomalDetector',
     pretrained=None,
     classifier=dict(
+        type="MLP",
         input_features_infos=[
             dict(
                 type="logit",
