@@ -1,0 +1,4 @@
+include requirements/*.txt
+include unknown_recognition/.mim/model-index.yml
+recursive-include unknown_recognition/.mim/configs *.py *.yml
+recursive-include unknown_recognition/.mim/tools *.py *.sh
