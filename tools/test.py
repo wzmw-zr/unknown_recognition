@@ -16,7 +16,7 @@ from mmcv.utils import DictAction
 from unknown_recognition import digit_version
 from unknown_recognition.apis import multi_gpu_test, single_gpu_test
 from unknown_recognition.datasets import build_dataloader, build_dataset
-from unknown_recognition.models import build_anomal_detector
+from unknown_recognition.models import build_unknown_detector
 from unknown_recognition.utils import build_ddp, build_dp, get_device, setup_multi_processes
 
 
@@ -215,7 +215,7 @@ def main():
 
     # build the model and load checkpoint
     cfg.model.train_cfg = None
-    model = build_anomal_detector(cfg.model, test_cfg=cfg.get('test_cfg'))
+    model = build_unknown_detector(cfg.model, test_cfg=cfg.get('test_cfg'))
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
         wrap_fp16_model(model)

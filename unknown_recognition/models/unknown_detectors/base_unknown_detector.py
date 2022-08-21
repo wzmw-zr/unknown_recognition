@@ -9,11 +9,11 @@ import torch.distributed as dist
 from mmcv.runner import BaseModule, auto_fp16
 
 
-class BaseAnomalDetector(BaseModule, metaclass=ABCMeta):
+class BaseUnknownDetector(BaseModule, metaclass=ABCMeta):
     """Base class for segmentors."""
 
     def __init__(self, init_cfg=None):
-        super(BaseAnomalDetector, self).__init__(init_cfg)
+        super(BaseUnknownDetector, self).__init__(init_cfg)
         self.fp16_enabled = False
 
     @abstractmethod

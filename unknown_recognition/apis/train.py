@@ -68,7 +68,7 @@ def set_random_seed(seed, deterministic=False):
         torch.backends.cudnn.benchmark = False
 
 
-def train_anomal_detector(model,
+def train_unknown_detector(model,
                     dataset,
                     cfg,
                     distributed=False,

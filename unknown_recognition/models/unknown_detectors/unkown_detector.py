@@ -4,12 +4,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .. import builder
-from ..builder import ANOMAL_DETECTOR
-from .base_anomal_detector import BaseAnomalDetector
+from ..builder import UNKNOWN_DETECTOR
+from .base_unknown_detector import BaseUnknownDetector
 
 
-@ANOMAL_DETECTOR.register_module()
-class AnomalDetector(BaseAnomalDetector):
+@UNKNOWN_DETECTOR.register_module()
+class UnknownDetector(BaseUnknownDetector):
     """Encoder Decoder segmentors.
 
     EncoderDecoder typically consists of backbone, decode_head, auxiliary_head.
@@ -23,7 +23,7 @@ class AnomalDetector(BaseAnomalDetector):
                  test_cfg=None,
                  pretrained=None,
                  init_cfg=None):
-        super(AnomalDetector, self).__init__(init_cfg)
+        super(UnknownDetector, self).__init__(init_cfg)
         if pretrained is not None:
             assert classifier.get('pretrained') is None, \
                 'both backbone and segmentor set pretrained weight'

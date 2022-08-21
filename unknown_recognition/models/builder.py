@@ -10,7 +10,7 @@ ATTENTION = Registry('attention', parent=MMCV_ATTENTION)
 
 CLASSIFIER = MODELS
 LOSSES = MODELS
-ANOMAL_DETECTOR = MODELS
+UNKNOWN_DETECTOR = MODELS
 
 def build_classifier(cfg):
     return CLASSIFIER.build(cfg)
@@ -19,7 +19,7 @@ def build_loss(cfg):
     """Build loss."""
     return LOSSES.build(cfg)
 
-def build_anomal_detector(cfg, train_cfg=None, test_cfg=None):
+def build_unknown_detector(cfg, train_cfg=None, test_cfg=None):
     """Build segmentor."""
     if train_cfg is not None or test_cfg is not None:
         warnings.warn(
@@ -29,5 +29,5 @@ def build_anomal_detector(cfg, train_cfg=None, test_cfg=None):
         'train_cfg specified in both outer field and model field '
     assert cfg.get('test_cfg') is None or test_cfg is None, \
         'test_cfg specified in both outer field and model field '
-    return ANOMAL_DETECTOR.build(
+    return UNKNOWN_DETECTOR.build(
         cfg, default_args=dict(train_cfg=train_cfg, test_cfg=test_cfg))

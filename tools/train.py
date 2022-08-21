@@ -14,9 +14,9 @@ from mmcv.runner import get_dist_info, init_dist
 from mmcv.utils import Config, DictAction, get_git_hash
 
 from unknown_recognition import __version__
-from unknown_recognition.apis import init_random_seed, set_random_seed, train_anomal_detector
+from unknown_recognition.apis import init_random_seed, set_random_seed, train_unknown_detector
 from unknown_recognition.datasets import build_dataset
-from unknown_recognition.models import build_anomal_detector
+from unknown_recognition.models import build_unknown_detector
 from unknown_recognition.utils import (collect_env, get_device, get_root_logger,
                          setup_multi_processes)
 
@@ -195,7 +195,7 @@ def main():
     meta['seed'] = seed
     meta['exp_name'] = osp.basename(args.config)
 
-    model = build_anomal_detector(
+    model = build_unknown_detector(
         cfg.model,
         train_cfg=cfg.get('train_cfg'),
         test_cfg=cfg.get('test_cfg'))
@@ -228,7 +228,7 @@ def main():
     model.CLASSES = datasets[0].CLASSES
     # passing checkpoint meta for saving best checkpoint
     meta.update(cfg.checkpoint_config.meta)
-    train_anomal_detector(
+    train_unknown_detector(
         model,
         datasets,
         cfg,

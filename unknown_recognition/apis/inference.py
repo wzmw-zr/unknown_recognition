@@ -6,9 +6,9 @@ from mmcv.parallel import collate, scatter
 from mmcv.runner import load_checkpoint
 
 from unknown_recognition.datasets.pipelines import Compose
-from unknown_recognition.models import build_anomal_detector
+from unknown_recognition.models import build_unknown_detector
 
-def init_anomal_detector(config, checkpoint=None, device='cuda:0'):
+def init_unknown_detector(config, checkpoint=None, device='cuda:0'):
     """Initialize a segmentor from config file.
 
     Args:
@@ -28,7 +28,7 @@ def init_anomal_detector(config, checkpoint=None, device='cuda:0'):
                         'but got {}'.format(type(config)))
     config.model.pretrained = None
     config.model.train_cfg = None
-    model = build_anomal_detector(config.model, test_cfg=config.get('test_cfg'))
+    model = build_unknown_detector(config.model, test_cfg=config.get('test_cfg'))
     if checkpoint is not None:
         checkpoint = load_checkpoint(model, checkpoint, map_location='cpu')
         model.CLASSES = checkpoint['meta']['CLASSES']
@@ -66,7 +66,7 @@ class LoadImage:
         return results
 
 
-def inference_anomal_detector(model, img):
+def inference_unknown_detector(model, img):
     """Inference image(s) with the segmentor.
 
     Args:
