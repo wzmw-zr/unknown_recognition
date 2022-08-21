@@ -1,7 +1,7 @@
 # model settings
 # norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    type='AnomalDetector',
+    type='UnknownDetector',
     pretrained=None,
     classifier=dict(
         type="MLP",
