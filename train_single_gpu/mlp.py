@@ -21,7 +21,7 @@ def parse_args():
     return args
 
 if __name__ == "__main__":
-    cfg = Config.fromfile("configs/mlp/mlp_256x1024_40k_anomal_dataset.py")
+    cfg = Config.fromfile("configs/mlp/mlp_40k_anomal_dataset.py")
 
     # print(f'Config:\n{cfg.pretty_text}')
 
