@@ -8,6 +8,32 @@ from numpy import random
 
 from ..builder import PIPELINES
 
+@PIPELINES.register_module()
+class LogitMinMaxNormalize(object):
+    def __init__(self, method: str="global") -> None:
+        assert method in ["global", "local"], \
+            f"method should be in ['global', 'local'], but get {method}"
+        self.method = method
+
+    def __call__(self, results):
+        logit = results["logit"]
+        if self.method == "global":
+            mmax = np.max(logit)
+            mmin = np.min(logit)
+            logit = (logit - mmin) / (mmax - mmin)
+        elif self.method == "local":
+            assert len(logit.shape) == 3, \
+                f"logit's shape should be [C, H, W], but get {logit.shape}"
+            mmax = np.max(logit, axis=0, keepdims=True)
+            mmin = np.min(logit, axis=0, keepdims=True)
+            logit = (logit - mmin) / (mmax - mmin)
+        results["logit"] = logit
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f"(method = {self.method})"
+        return repr_str
+
 
 @PIPELINES.register_module()
 class ResizeToMultiple(object):
