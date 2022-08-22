@@ -133,7 +133,7 @@ class CustomDataset(Dataset):
             if not osp.isabs(self.logit_dir):
                 self.logit_dir = osp.join(self.data_root, self.logit_dir)
             if not osp.isabs(self.softmax_dir):
-                self.softmax_dir = osp.join(self.data_root, self.logit_dir)
+                self.softmax_dir = osp.join(self.data_root, self.softmax_dir)
             if not (self.ann_dir is None or osp.isabs(self.ann_dir)):
                 self.ann_dir = osp.join(self.data_root, self.ann_dir)
 

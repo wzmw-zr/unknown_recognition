@@ -10,8 +10,6 @@ from mmcv.utils import build_from_cfg, print_log
 from torch.utils.data.dataset import ConcatDataset as _ConcatDataset
 
 from .builder import DATASETS, PIPELINES
-from .cityscapes import CityscapesDataset
-
 
 @DATASETS.register_module()
 class ConcatDataset(_ConcatDataset):
@@ -34,10 +32,6 @@ class ConcatDataset(_ConcatDataset):
         assert separate_eval in [True, False], \
             f'separate_eval can only be True or False,' \
             f'but get {separate_eval}'
-        if any([isinstance(ds, CityscapesDataset) for ds in datasets]):
-            raise NotImplementedError(
-                'Evaluating ConcatDataset containing CityscapesDataset'
-                'is not supported!')
 
     def evaluate(self, results, logger=None, **kwargs):
         """Evaluate the results.
