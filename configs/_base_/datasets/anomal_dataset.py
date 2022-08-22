@@ -1,6 +1,6 @@
 # dataset settings
 dataset_type = 'AnomalDataset'
-data_root = 'data/anomal/'
+data_root = 'data/anomal_dataset/'
 train_pipeline = [
     dict(type='LoadLogit'),
     dict(type='LoadSoftmax'),
