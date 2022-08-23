@@ -15,12 +15,15 @@ import mmcv
 def parse_args():
     parser = argparse.ArgumentParser(
         description='ignore edges for semantic segmentation')
-    parser.add_argument('train_gt_directory', help='train_gt_directory')
-    parser.add_argument('output_path', help="output_path")
+    parser.add_argument("lr", help="learning_rate", type=float)
+    # parser.add_argument('train_gt_directory', help='train_gt_directory')
+    # parser.add_argument('output_path', help="output_path")
     args = parser.parse_args()
     return args
 
 if __name__ == "__main__":
+    args = parse_args()
+    lr = args.lr
     cfg = Config.fromfile("configs/mlp/mlp_40k_anomal_dataset.py")
 
     # print(f'Config:\n{cfg.pretty_text}')
@@ -38,7 +41,7 @@ if __name__ == "__main__":
     # cfg.model.decode_head.loss_decode.avg_non_ignore = True
     cfg.seed = 0
     set_random_seed(0, deterministic=False)
-    cfg.optimizer.lr = 0.00006
+    cfg.optimizer.lr = lr
 
     """
     simulate multi-gpu with single gpu
@@ -50,10 +53,11 @@ if __name__ == "__main__":
     # cfg.checkpoint_config.interval = 128000
     # cfg.evaluation = dict(interval=128000, metric='mIoU', pre_eval=True)
 
-    # cfg.gpu_ids = range(1)
-    # cfg.work_dir = './work_dirs/cityscapes/segformer_mit-b0'
-    # cfg.data.samples_per_gpu = 1
-    # cfg.data.workers_per_gpu = 1
+    cfg.device = "cuda"
+    cfg.gpu_ids = range(1)
+    cfg.data.samples_per_gpu = 16
+    cfg.data.workers_per_gpu = 16
+    cfg.work_dir = './work_dirs/anomal_datasets/mlp'
 
     print(f'Config:\n{cfg.pretty_text}')
 
