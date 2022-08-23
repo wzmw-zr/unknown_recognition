@@ -28,6 +28,7 @@ class LogitMinMaxNormalize(object):
             mmin = np.min(logit, axis=0, keepdims=True)
             logit = (logit - mmin) / (mmax - mmin)
         results["logit"] = logit
+        return results
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
