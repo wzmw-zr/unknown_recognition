@@ -3,8 +3,10 @@ import warnings
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.utils.checkpoint as cp
+from mmcv.cnn.utils.weight_init import (constant_init, kaiming_init,
+                                        trunc_normal_)
 from mmcv.runner import BaseModule, force_fp32
+from torch.nn.modules.batchnorm import _BatchNorm
 from torch import Tensor
 
 from ..builder import CLASSIFIER, build_loss
@@ -58,6 +60,20 @@ class MLP(BaseModule):
         self.fc2 = nn.Conv2d(hidden_channels, hidden_channels, 1)
         self.fc3 = nn.Conv2d(hidden_channels, self.num_classes, 1)
 
+    def init_weights(self):
+        for n, m in self.named_modules():
+            if isinstance(m, nn.Linear):
+                trunc_normal_(m.weight, std=.02)
+                if m.bias is not None:
+                    if 'ffn' in n:
+                        nn.init.normal_(m.bias, mean=0., std=1e-6)
+                    else:
+                        nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Conv2d):
+                kaiming_init(m, mode='fan_in', bias=0.)
+            elif isinstance(m, (_BatchNorm, nn.GroupNorm, nn.LayerNorm)):
+                constant_init(m, val=1.0, bias=0.)
+
     def forward(self, logit: Tensor, softmax: Tensor):
         inputs = torch.concat((logit, softmax), dim=1)
         assert inputs.shape[1] == self.in_channels, \
@@ -70,7 +86,7 @@ class MLP(BaseModule):
 
     def forward_train(self, logit: Tensor, softmax: Tensor, img_metas, gt_semantic_seg):
         seg_logits = self.forward(logit, softmax)
-        loss = self.losses(seg_logits, img_metas, gt_semantic_seg)
+        loss = self.losses(seg_logits, gt_semantic_seg)
         return loss
 
     def forward_test(self, logit: Tensor, softmax: Tensor, img_metas):
