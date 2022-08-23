@@ -75,32 +75,10 @@ class UnknownDetector(BaseUnknownDetector):
         """
 
         assert self.test_cfg.mode in ['whole']
-        ori_shape = img_meta[0]['ori_shape']
-        assert all(_['ori_shape'] == ori_shape for _ in img_meta)
 
         seg_logit = self._classifier_forward_test(logit, softmax, img_meta)
-        if rescale:
-            resize_shape = img_meta[0]['img_shape'][:2]
-            seg_logit = seg_logit[:, :, :resize_shape[0], :resize_shape[1]]
-            size = img_meta[0]['ori_shape'][:2]
-
-            seg_logit = torch.nn.functional.interpolate(
-                seg_logit,
-                size=size,
-                mode='bilinear',
-                align_corners=self.align_corners
-            )
 
         output = F.softmax(seg_logit, dim=1)
-
-        flip = img_meta[0]['flip']
-        if flip:
-            flip_direction = img_meta[0]['flip_direction']
-            assert flip_direction in ['horizontal', 'vertical']
-            if flip_direction == 'horizontal':
-                output = output.flip(dims=(3, ))
-            elif flip_direction == 'vertical':
-                output = output.flip(dims=(2, ))
 
         return output
 
@@ -116,3 +94,29 @@ class UnknownDetector(BaseUnknownDetector):
         # unravel batch dim
         seg_pred = list(seg_pred)
         return seg_pred
+
+    def forward(self, logit, softmax, img_metas, return_loss=True, **kwargs):
+        """Calls either :func:`forward_train` or :func:`forward_test` depending
+        on whether ``return_loss`` is ``True``.
+
+        Note this setting will change the expected inputs. When
+        ``return_loss=True``, img and img_meta are single-nested (i.e. Tensor
+        and List[dict]), and when ``resturn_loss=False``, img and img_meta
+        should be double nested (i.e.  List[Tensor], List[List[dict]]), with
+        the outer list indicating test time augmentations.
+        """
+        if return_loss:
+            return self.forward_train(logit, softmax, img_metas, **kwargs)
+        else:
+            return self.forward_test(logit, softmax, img_metas, **kwargs)
+
+    def simple_test(self, logit, softmax, img_meta, **kwargs):
+        seg_logit = self.inference(logit, softmax, img_meta, rescale=True)
+        seg_pred = seg_logit.argmax(dim=1)
+        seg_pred = seg_pred.cpu().numpy()
+        seg_pred = list(seg_pred)
+        return seg_pred
+
+    def aug_test(self, imgs, img_metas, **kwargs):
+        """Placeholder for augmentation test."""
+        raise NotImplementedError
