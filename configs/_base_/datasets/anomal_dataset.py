@@ -4,13 +4,15 @@ data_root = 'data/anomal_dataset/'
 train_pipeline = [
     dict(type='LoadLogit'),
     dict(type='LoadSoftmax'),
-    dict(type='LoadAnnotations', reduce_zero_label=True),
+    dict(type='LoadAnnotations', reduce_zero_label=False),
+    dict(type="LogitMinMaxNormalize", method="global"),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['logit', 'softmax', 'gt_semantic_seg']),
 ]
 test_pipeline = [
     dict(type='LoadLogit'),
     dict(type='LoadSoftmax'),
+    dict(type="LogitMinMaxNormalize", method="global"),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['logit', 'softmax']),
 ]
