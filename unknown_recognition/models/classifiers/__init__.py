@@ -1,5 +1,7 @@
 from .mlp import MLP
+from .mlp_logit import MLPLogit
+from .mlp_softmax import MLPSoftmax
 
 __all__ = [
-    'MLP'
+    'MLP', 'MLPLogit', 'MLPSoftmax'
 ]
