@@ -4,6 +4,7 @@ from unittest import result
 
 import mmcv
 import numpy as np
+import torch
 
 from ..builder import PIPELINES
 
@@ -175,3 +176,20 @@ class LoadSoftmax(object):
         repr_str = self.__class__.__name__
         repr_str += f'(to_float32={self.to_float32},'
         return repr_str
+
+
+@PIPELINES.register_module()
+class LoadSoftmaxFromLogit(object):
+    """ Load Softmax from Logit value (to save disk space).
+    """
+    def __init__(self) -> None:
+        pass
+
+    def __call__(self, results):
+        logit = results.get("logit", None)
+        assert logit is not None, \
+            f"logit should not be None"
+        softmax = torch.nn.functional.softmax(torch.as_tensor(logit), dim=0)
+        results["softmax"] = softmax
+        results["seg_fields"].append("softmax")
+        return results

@@ -2,7 +2,7 @@
 from .compose import Compose
 from .formatting import (Collect, ImageToTensor, ToDataContainer, ToTensor,
                          Transpose, to_tensor)
-from .loading import LoadAnnotations, LoadLogit, LoadSoftmax
+from .loading import LoadAnnotations, LoadLogit, LoadSoftmax, LoadSoftmaxFromLogit
 from .transforms import (CLAHE, AdjustGamma, Normalize, Pad,
                          PhotoMetricDistortion, RandomCrop, RandomCutOut,
                          RandomFlip, RandomMosaic, RandomRotate, Rerange,
@@ -14,5 +14,5 @@ __all__ = [
     'Resize', 'RandomFlip', 'Pad', 'RandomCrop',
     'Normalize', 'SegRescale', 'PhotoMetricDistortion', 'RandomRotate',
     'AdjustGamma', 'CLAHE', 'Rerange', 'RGB2Gray', 'RandomCutOut',
-    'RandomMosaic', 'LogitMinMaxNormalize'
+    'RandomMosaic', 'LogitMinMaxNormalize', 'LoadSoftmaxFromLogit'
 ]
