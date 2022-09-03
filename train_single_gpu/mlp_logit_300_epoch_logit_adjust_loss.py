@@ -20,8 +20,8 @@ def parse_args():
     parser.add_argument("policy", help="policy", type=str)
     parser.add_argument("unknown_ratio", help="unknown_ratio", type=float)
     parser.add_argument("known_ratio", help="known_ratio", type=float)
-    # parser.add_argument('train_gt_directory', help='train_gt_directory')
-    # parser.add_argument('output_path', help="output_path")
+    parser.add_argument("logit_norm_type", help="logit_norm_type", type=str)
+    parser.add_argument("norm_type", help="norm_type", type=str)
     args = parser.parse_args()
     return args
 
@@ -32,6 +32,9 @@ if __name__ == "__main__":
     policy = args.policy
     unknown_ratio = args.unknown_ratio
     known_ratio = args.known_ratio
+    logit_norm_type = args.logit_norm_type
+    norm_type = args.norm_type
+    norm_type = norm_type if norm_type != "None" else None
 
     cfg = Config.fromfile("configs/mlp/mlp_logit_anomal_dataset_logit_adjust_loss_300_epoch.py")
 
@@ -41,7 +44,14 @@ if __name__ == "__main__":
 
     PALETTE = [[255, 255, 255], [0, 0, 0]]
 
+    cfg.train_pipeline[2] = dict(type="LogitMinMaxNormalize", method=logit_norm_type)
+    cfg.test_pipeline[1] = dict(type="LogitMinMaxNormalize", method=logit_norm_type)
+    cfg.data.train.pipeline = cfg.train_pipeline
+    cfg.data.val.pipeline = cfg.test_pipeline
+    cfg.data.test.pipeline = cfg.test_pipeline
+
     cfg.model.classifier.loss_decode.class_ratio = [unknown_ratio, known_ratio]
+    cfg.model.classifier.norm = norm_type
 
     cfg.checkpoint_config.meta = dict(
         CLASSES=CLASSES,
@@ -66,12 +76,13 @@ if __name__ == "__main__":
     cfg.lr_config.policy = policy
     # cfg.checkpoint_config.interval = 128000
     # cfg.evaluation = dict(interval=128000, metric='mIoU', pre_eval=True)
+    cfg.evaluation = dict(interval=10, metric=["mIoU", "mFscore", "mDice"])
 
     cfg.device = "cuda"
     cfg.gpu_ids = range(1)
     cfg.data.samples_per_gpu = 16
-    cfg.data.workers_per_gpu = 16
-    cfg.work_dir = './work_dirs/anomal_datasets/mlp_logit'
+    cfg.data.workers_per_gpu = 2
+    cfg.work_dir = f'./work_dirs/anomal_datasets/mlp_logit_lr_{lr}_epoch_{epoch}_policy_{policy}_unknown_{unknown_ratio}_known_{known_ratio}_norm_{logit_norm_type}'
 
     print(f'Config:\n{cfg.pretty_text}')
 
