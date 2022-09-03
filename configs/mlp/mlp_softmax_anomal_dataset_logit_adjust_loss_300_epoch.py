@@ -26,16 +26,18 @@ model = dict(
     test_cfg=dict(mode='whole'))
 
 # dataset settings
-dataset_type = 'AnomalDataset'
+dataset_type = 'AnomalDatasetFast'
 data_root = 'data/anomal_dataset/'
 train_pipeline = [
-    dict(type='LoadSoftmax'),
+    dict(type='LoadLogit'),
+    dict(type="LoadSoftmaxFromLogit"),
     dict(type='LoadAnnotations', reduce_zero_label=False),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['softmax', 'gt_semantic_seg']),
 ]
 test_pipeline = [
-    dict(type='LoadSoftmax'),
+    dict(type='LoadLogit'),
+    dict(type="LoadSoftmaxFromLogit"),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['softmax']),
 ]
@@ -46,20 +48,22 @@ data = dict(
         type=dataset_type,
         data_root=data_root,
         logit_dir='logit/train',
-        softmax_dir='softmax/train',
         ann_dir='gtFine/train',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         data_root=data_root,
         logit_dir='logit/val',
-        softmax_dir='softmax/val',
         ann_dir='gtFine/val',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         data_root=data_root,
         logit_dir='logit/val',
-        softmax_dir='softmax/val',
         ann_dir='gtFine/val',
         pipeline=test_pipeline))
+
+
+optimizer = dict(
+    _delete_=True,
+    type='AdamW', lr=0.1, weight_decay=0.01)

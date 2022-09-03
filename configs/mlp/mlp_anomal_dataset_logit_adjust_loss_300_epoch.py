@@ -29,3 +29,7 @@ model = dict(
         init_cfg=None
     )
 )
+
+optimizer = dict(
+    _delete_=True,
+    type='AdamW', lr=0.1, weight_decay=0.01)
