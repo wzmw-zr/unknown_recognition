@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from unittest import result
 
 import mmcv
 import numpy as np
@@ -43,6 +42,13 @@ class LoadAnnotations(object):
             dict: The dict contains loaded semantic segmentation annotations.
         """
 
+        # Case: Ground truth has been loaded into RAM.
+        if results.get("gt_semantic_seg", None) is not None:
+            if "gt_semantic_seg" not in results["seg_fields"]:
+                results["seg_fields"].append("gt_semantic_seg")
+            return results
+
+         # Case: Ground truth hasn't been loaded into RAM.
         if self.file_client is None:
             self.file_client = mmcv.FileClient(**self.file_client_args)
 
@@ -108,7 +114,13 @@ class LoadLogit(object):
         Returns:
             dict: The dict contains loaded image and meta information.
         """
-
+        # Case: Logit has been loaded into RAM.
+        if results.get("logit") is not None:
+            if "logit" not in results["seg_fields"]:
+                results["seg_fields"].append("logit")
+            return results
+        
+        # Case: Logit hasn't been loaded into RAM.
         if results.get('logit_prefix') is not None:
             logit_filename = osp.join(results['logit_prefix'],
                                 results['logit_info']['logit_filename'])
@@ -193,3 +205,82 @@ class LoadSoftmaxFromLogit(object):
         results["softmax"] = softmax
         results["seg_fields"].append("softmax")
         return results
+
+
+@PIPELINES.register_module()
+class LoadTop2LogitDistance(object):
+    def __init__(self) -> None:
+        pass
+
+    def __call__(self, results):
+        logit = results.get("logit", None)
+        assert logit is not None,\
+            f"logit should not be None"
+        top2 = torch.topk(torch.as_tensor(logit), k=2, dim=0)[0]
+        top2_distance = top2[0: 1, :, :] - top2[1: 2, :, :]
+        results["top2_distance"] = top2_distance
+        results["seg_fields"].append("top2_distance")
+        return results
+
+
+
+@PIPELINES.register_module()
+class LoadSegPrediction(object):
+    def __init__(self,
+                 file_client_args=dict(backend='disk'),
+                 imdecode_backend='pillow'):
+        self.file_client_args = file_client_args.copy()
+        self.file_client = None
+        self.imdecode_backend = imdecode_backend
+
+    def __call__(self, results):
+        if self.file_client is None:
+            self.file_client = mmcv.FileClient(**self.file_client_args)
+
+        if results.get('seg_pred_prefix', None) is not None:
+            filename = osp.join(results['seg_pred_prefix'],
+                                results['seg_pred_info']['seg_pred_filename'])
+        else:
+            filename = results['seg_pred_info']['seg_pred_filename']
+        img_bytes = self.file_client.get(filename)
+        seg_pred = mmcv.imfrombytes(
+            img_bytes, flag='unchanged',
+            backend=self.imdecode_backend).squeeze().astype(np.uint8)
+        results['seg_pred'] = seg_pred
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f"imdecode_backend='{self.imdecode_backend}')"
+        return repr_str
+
+
+@PIPELINES.register_module()
+class LoadSegGT(object):
+    def __init__(self,
+                 file_client_args=dict(backend='disk'),
+                 imdecode_backend='pillow'):
+        self.file_client_args = file_client_args.copy()
+        self.file_client = None
+        self.imdecode_backend = imdecode_backend
+
+    def __call__(self, results):
+        if self.file_client is None:
+            self.file_client = mmcv.FileClient(**self.file_client_args)
+
+        if results.get('seg_gt_prefix', None) is not None:
+            filename = osp.join(results['seg_gt_prefix'],
+                                results['seg_gt_info']['seg_gt_filename'])
+        else:
+            filename = results['seg_gt_info']['seg_gt_filename']
+        img_bytes = self.file_client.get(filename)
+        seg_gt = mmcv.imfrombytes(
+            img_bytes, flag='unchanged',
+            backend=self.imdecode_backend).squeeze().astype(np.uint8)
+        results['seg_gt'] = seg_gt
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f"imdecode_backend='{self.imdecode_backend}')"
+        return repr_str

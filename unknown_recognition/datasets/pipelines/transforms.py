@@ -11,8 +11,8 @@ from ..builder import PIPELINES
 @PIPELINES.register_module()
 class LogitMinMaxNormalize(object):
     def __init__(self, method: str="global") -> None:
-        assert method in ["global", "local"], \
-            f"method should be in ['global', 'local'], but get {method}"
+        assert method in ["global", "local", "top2"], \
+            f"method should be in ['global', 'local', 'top2'], but get {method}"
         self.method = method
 
     def __call__(self, results):
@@ -27,6 +27,9 @@ class LogitMinMaxNormalize(object):
             mmax = np.max(logit, axis=0, keepdims=True)
             mmin = np.min(logit, axis=0, keepdims=True)
             logit = (logit - mmin) / (mmax - mmin)
+        elif self.method == "top2":
+            second_max = np.sort(logit, axis=0)[-2: -1, :, :]
+            logit = logit - second_max
         results["logit"] = logit
         return results
 
