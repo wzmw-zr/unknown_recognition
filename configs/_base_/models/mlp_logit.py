@@ -13,7 +13,8 @@ model = dict(
             use_sigmoid=False,
             loss_weight=1.0),
         ignore_index=255,
-        init_cfg=None
+        init_cfg=None,
+        norm=None
     ),
     # model training and testing settings
     train_cfg=dict(),
