@@ -4,9 +4,10 @@ from .custom import CustomDataset
 from .dataset_wrappers import (ConcatDataset, MultiImageMixDataset,
                                RepeatDataset)
 from .anomal_dataset import AnomalDataset
+from .anomal_dataset_fast import AnomalDatasetFast
 
 __all__ = [
     'CustomDataset', 'build_dataloader', 'ConcatDataset', 'RepeatDataset',
     'DATASETS', 'build_dataset', 'PIPELINES', 'MultiImageMixDataset',
-    'AnomalDataset'
+    'AnomalDataset', 'AnomalDatasetFast'
 ]
