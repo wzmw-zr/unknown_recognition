@@ -1,15 +1,22 @@
 _base_ = [
-    '../_base_/models/mlp_logit.py',
+    '../_base_/models/mlp_logit_top2.py',
     '../_base_/datasets/anomal_dataset.py', '../_base_/default_runtime.py',
     '../_base_/schedules/schedule_epoch_300.py'
 ]
 
 model = dict(
-    type='UnknownDetectorLogit',
-    pretrained=None,
     classifier=dict(
-        type="MLPLogit",
-        in_channels=19,
+        type="MLPLogitTop2",
+        input_features_infos=[
+            dict(
+                type="logit",
+                in_channels=19,
+            ),
+            dict(
+                type="top2_distance",
+                in_channels=1,
+            )
+        ],
         hidden_channels=256,
         num_classes=2,
         loss_decode=dict(
@@ -20,29 +27,28 @@ model = dict(
         ),
         ignore_index=255,
         init_cfg=None
-    ),
-    # model training and testing settings
-    train_cfg=dict(),
-    test_cfg=dict(mode='whole'))
+    )
+)
 
+# dataset settings
 dataset_type = 'AnomalDatasetFast'
 # data_root = 'data/anomal_dataset/'
 data_root = 'data/anomal_campusE1/'
-
 train_pipeline = [
     dict(type='LoadLogit'),
-    dict(type='LoadAnnotations', reduce_zero_label=False),
+    dict(type="LoadTop2LogitDistance"),
     dict(type="LogitMinMaxNormalize", method="global"),
+    dict(type='LoadAnnotations', reduce_zero_label=False),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['logit', 'gt_semantic_seg']),
+    dict(type='Collect', keys=['logit', 'top2_distance', 'gt_semantic_seg']),
 ]
 test_pipeline = [
     dict(type='LoadLogit'),
+    dict(type="LoadTop2LogitDistance"),
     dict(type="LogitMinMaxNormalize", method="global"),
     dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['logit']),
+    dict(type='Collect', keys=['logit', 'top2_distance']),
 ]
-
 data = dict(
     samples_per_gpu=1,
     workers_per_gpu=1,

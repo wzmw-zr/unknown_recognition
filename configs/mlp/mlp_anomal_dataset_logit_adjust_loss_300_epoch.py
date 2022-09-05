@@ -30,6 +30,57 @@ model = dict(
     )
 )
 
+dataset_type = 'AnomalDatasetFast'
+# data_root = 'data/anomal_dataset/'
+data_root = 'data/anomal_campusE1/'
+train_pipeline = [
+    dict(type='LoadLogit'),
+    dict(type="LoadSoftmaxFromLogit"),
+    dict(type='LoadAnnotations', reduce_zero_label=False),
+    dict(type="LogitMinMaxNormalize", method="global"),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['logit', 'softmax', 'gt_semantic_seg']),
+]
+test_pipeline = [
+    dict(type='LoadLogit'),
+    dict(type="LoadSoftmaxFromLogit"),
+    dict(type="LogitMinMaxNormalize", method="global"),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['logit', 'softmax']),
+]
+
+data = dict(
+    samples_per_gpu=1,
+    workers_per_gpu=1,
+    train=dict(
+        type=dataset_type,
+        data_root=data_root,
+        # logit_dir='logit/train',
+        # ann_dir='gtFine/train',
+        logit_dir='logit/deeplabv3plus/train',
+        ann_dir='gtFine/deeplabv3plus/train',
+        pipeline=train_pipeline),
+    val=dict(
+        type=dataset_type,
+        data_root=data_root,
+        # logit_dir='logit/val',
+        # ann_dir='gtFine/val',
+        logit_dir='logit/deeplabv3plus/val',
+        ann_dir='gtFine/deeplabv3plus/val',
+        pipeline=test_pipeline),
+    test=dict(
+        type=dataset_type,
+        data_root=data_root,
+        # logit_dir='logit/val',
+        # ann_dir='gtFine/val',
+        logit_dir='logit/deeplabv3plus/val',
+        ann_dir='gtFine/deeplabv3plus/val',
+        pipeline=test_pipeline))
+
 optimizer = dict(
     _delete_=True,
     type='AdamW', lr=0.1, weight_decay=0.01)
+
+lr_config = dict(
+    _delete_=True,
+    policy='fixed')
