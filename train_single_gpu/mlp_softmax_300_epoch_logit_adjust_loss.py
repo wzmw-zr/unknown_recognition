@@ -67,12 +67,12 @@ if __name__ == "__main__":
     cfg.runner = dict(type='EpochBasedRunner', max_epochs=epoch)
     cfg.lr_config.policy = policy
     # cfg.checkpoint_config.interval = 128000
-    cfg.evaluation = dict(interval=10, metric=["mIoU", "mFscore", "mDice"])
+    cfg.evaluation = dict(interval=epoch // 10, metric=["mIoU", "mFscore"])
 
     cfg.device = "cuda"
     cfg.gpu_ids = range(1)
-    cfg.data.samples_per_gpu = 16
-    cfg.data.workers_per_gpu = 2
+    cfg.data.samples_per_gpu = 128
+    cfg.data.workers_per_gpu = 8
     cfg.work_dir = f'./work_dirs/anomal_datasets/mlp_softmax_lr_{lr}_epoch_{epoch}_policy_{policy}_unknown_{unknown_ratio}_known_{known_ratio}'
 
     print(f'Config:\n{cfg.pretty_text}')

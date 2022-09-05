@@ -76,13 +76,13 @@ if __name__ == "__main__":
     cfg.lr_config.policy = policy
     # cfg.checkpoint_config.interval = 128000
     # cfg.evaluation = dict(interval=128000, metric='mIoU', pre_eval=True)
-    cfg.evaluation = dict(interval=10, metric=["mIoU", "mFscore", "mDice"])
+    cfg.evaluation = dict(interval=epoch // 10, metric=["mIoU", "mFscore"])
 
     cfg.device = "cuda"
     cfg.gpu_ids = range(1)
-    cfg.data.samples_per_gpu = 16
-    cfg.data.workers_per_gpu = 2
-    cfg.work_dir = f'./work_dirs/anomal_datasets/mlp_logit_lr_{lr}_epoch_{epoch}_policy_{policy}_unknown_{unknown_ratio}_known_{known_ratio}_norm_{logit_norm_type}'
+    cfg.data.samples_per_gpu = 128
+    cfg.data.workers_per_gpu = 8
+    cfg.work_dir = f'./work_dirs/anomal_datasets/mlp_logit_lr_{lr}_epoch_{epoch}_policy_{policy}_unknown_{unknown_ratio}_known_{known_ratio}_norm_{logit_norm_type}_norm_{norm_type}'
 
     print(f'Config:\n{cfg.pretty_text}')
 

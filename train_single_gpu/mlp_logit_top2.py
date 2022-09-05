@@ -36,16 +36,27 @@ if __name__ == "__main__":
     norm_type = args.norm_type
     norm_type = norm_type if norm_type != "None" else None
 
-    cfg = Config.fromfile("configs/mlp/mlp_anomal_dataset_logit_adjust_loss_300_epoch.py")
-
-    # print(f'Config:\n{cfg.pretty_text}')
+    cfg = Config.fromfile("configs/mlp/mlp_logit_top2.py")
 
     CLASSES = ('unknown', 'known')
 
     PALETTE = [[255, 255, 255], [0, 0, 0]]
 
-    cfg.train_pipeline[3] = dict(type="LogitMinMaxNormalize", method=logit_norm_type)
-    cfg.test_pipeline[2] = dict(type="LogitMinMaxNormalize", method=logit_norm_type)
+    cfg.train_pipeline = [
+        dict(type='LoadLogit'),
+        dict(type="LoadTop2LogitDistance"),
+        dict(type="LogitMinMaxNormalize", method=logit_norm_type),
+        dict(type='LoadAnnotations', reduce_zero_label=False),
+        dict(type='DefaultFormatBundle'),
+        dict(type='Collect', keys=['logit', 'top2_distance', 'gt_semantic_seg']),
+    ]
+    cfg.test_pipeline = [
+        dict(type='LoadLogit'),
+        dict(type="LoadTop2LogitDistance"),
+        dict(type="LogitMinMaxNormalize", method=logit_norm_type),
+        dict(type='DefaultFormatBundle'),
+        dict(type='Collect', keys=['logit', 'top2_distance']),
+    ]
     cfg.data.train.pipeline = cfg.train_pipeline
     cfg.data.val.pipeline = cfg.test_pipeline
     cfg.data.test.pipeline = cfg.test_pipeline
@@ -82,7 +93,7 @@ if __name__ == "__main__":
     cfg.gpu_ids = range(1)
     cfg.data.samples_per_gpu = 128
     cfg.data.workers_per_gpu = 8
-    cfg.work_dir = f'./work_dirs/anomal_datasets/mlp_logit_with_softmax_lr_{lr}_epoch_{epoch}_policy_{policy}_unknown_{unknown_ratio}_known_{known_ratio}_norm_{logit_norm_type}_norm_{norm_type}'
+    cfg.work_dir = f'./work_dirs/mlp_logit_top2_{lr}_{epoch}_{policy}_{unknown_ratio}_{known_ratio}_{logit_norm_type}_{norm_type}'
 
 
     print(f'Config:\n{cfg.pretty_text}')
