@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument("known_ratio", help="known_ratio", type=float)
     parser.add_argument("logit_norm_type", help="logit_norm_type", type=str)
     parser.add_argument("norm_type", help="norm_type", type=str)
+    parser.add_argument("seg_model", help="seg_model", type=str)
     args = parser.parse_args()
     return args
 
@@ -35,6 +36,7 @@ if __name__ == "__main__":
     logit_norm_type = args.logit_norm_type
     norm_type = args.norm_type
     norm_type = norm_type if norm_type != "None" else None
+    seg_model = args.seg_model
 
     cfg = Config.fromfile("configs/mlp/mlp_logit_anomal_dataset_logit_adjust_loss_300_epoch.py")
 
@@ -49,6 +51,12 @@ if __name__ == "__main__":
     cfg.data.train.pipeline = cfg.train_pipeline
     cfg.data.val.pipeline = cfg.test_pipeline
     cfg.data.test.pipeline = cfg.test_pipeline
+    cfg.data.train.logit_dir = f"logit/{seg_model}/train"
+    cfg.data.train.ann_dir = f"gtFine/{seg_model}/train"
+    cfg.data.val.logit_dir = f"logit/{seg_model}/val"
+    cfg.data.val.ann_dir = f"gtFine/{seg_model}/val"
+    cfg.data.test.logit_dir = f"logit/{seg_model}/test"
+    cfg.data.test.ann_dir = f"gtFine/{seg_model}/test"
 
     cfg.model.classifier.loss_decode.class_ratio = [unknown_ratio, known_ratio]
     cfg.model.classifier.norm = norm_type
@@ -82,7 +90,7 @@ if __name__ == "__main__":
     cfg.gpu_ids = range(1)
     cfg.data.samples_per_gpu = 128
     cfg.data.workers_per_gpu = 8
-    cfg.work_dir = f'./work_dirs/anomal_datasets/mlp_logit_lr_{lr}_epoch_{epoch}_policy_{policy}_unknown_{unknown_ratio}_known_{known_ratio}_norm_{logit_norm_type}_norm_{norm_type}'
+    cfg.work_dir = f'./work_dirs/anomal_datasets/mlp_logit_lr_{lr}_epoch_{epoch}_policy_{policy}_unknown_{unknown_ratio}_known_{known_ratio}_norm_{logit_norm_type}_norm_{norm_type}_seg_model_{seg_model}'
 
     print(f'Config:\n{cfg.pretty_text}')
 

@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument("known_ratio", help="known_ratio", type=float)
     parser.add_argument("logit_norm_type", help="logit_norm_type", type=str)
     parser.add_argument("norm_type", help="norm_type", type=str)
+    parser.add_argument("seg_model", help="seg_model", type=str)
     args = parser.parse_args()
     return args
 
@@ -35,6 +36,7 @@ if __name__ == "__main__":
     logit_norm_type = args.logit_norm_type
     norm_type = args.norm_type
     norm_type = norm_type if norm_type != "None" else None
+    seg_model = args.seg_model
 
     cfg = Config.fromfile("configs/mlp/mlp_logit_top2_softmax.py")
 
@@ -62,6 +64,12 @@ if __name__ == "__main__":
     cfg.data.train.pipeline = cfg.train_pipeline
     cfg.data.val.pipeline = cfg.test_pipeline
     cfg.data.test.pipeline = cfg.test_pipeline
+    cfg.data.train.logit_dir = f"logit/{seg_model}/train"
+    cfg.data.train.ann_dir = f"gtFine/{seg_model}/train"
+    cfg.data.val.logit_dir = f"logit/{seg_model}/val"
+    cfg.data.val.ann_dir = f"gtFine/{seg_model}/val"
+    cfg.data.test.logit_dir = f"logit/{seg_model}/test"
+    cfg.data.test.ann_dir = f"gtFine/{seg_model}/test"
 
     cfg.model.classifier.loss_decode.class_ratio = [unknown_ratio, known_ratio]
     cfg.model.classifier.norm = norm_type
@@ -95,7 +103,7 @@ if __name__ == "__main__":
     cfg.gpu_ids = range(1)
     cfg.data.samples_per_gpu = 128
     cfg.data.workers_per_gpu = 8
-    cfg.work_dir = f'./work_dirs/mlp_logit_top2_softmax_{lr}_{epoch}_{policy}_{unknown_ratio}_{known_ratio}_{logit_norm_type}_{norm_type}'
+    cfg.work_dir = f'./work_dirs/mlp_logit_top2_softmax_{lr}_{epoch}_{policy}_{unknown_ratio}_{known_ratio}_{logit_norm_type}_{norm_type}_{seg_model}'
 
 
     print(f'Config:\n{cfg.pretty_text}')

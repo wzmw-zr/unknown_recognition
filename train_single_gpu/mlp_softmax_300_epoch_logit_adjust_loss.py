@@ -21,6 +21,7 @@ def parse_args():
     parser.add_argument("unknown_ratio", help="unknown_ratio", type=float)
     parser.add_argument("known_ratio", help="known_ratio", type=float)
     parser.add_argument("norm_type", help="norm_type", type=str)
+    parser.add_argument("seg_model", help="seg_model", type=str)
     args = parser.parse_args()
     return args
 
@@ -33,6 +34,7 @@ if __name__ == "__main__":
     known_ratio = args.known_ratio
     norm_type = args.norm_type
     norm_type = norm_type if norm_type != "None" else None
+    seg_model = args.seg_model
 
     cfg = Config.fromfile("configs/mlp/mlp_softmax_anomal_dataset_logit_adjust_loss_300_epoch.py")
 
@@ -73,7 +75,13 @@ if __name__ == "__main__":
     cfg.gpu_ids = range(1)
     cfg.data.samples_per_gpu = 128
     cfg.data.workers_per_gpu = 8
-    cfg.work_dir = f'./work_dirs/anomal_datasets/mlp_softmax_lr_{lr}_epoch_{epoch}_policy_{policy}_unknown_{unknown_ratio}_known_{known_ratio}'
+    cfg.data.train.logit_dir = f"logit/{seg_model}/train"
+    cfg.data.train.ann_dir = f"gtFine/{seg_model}/train"
+    cfg.data.val.logit_dir = f"logit/{seg_model}/val"
+    cfg.data.val.ann_dir = f"gtFine/{seg_model}/val"
+    cfg.data.test.logit_dir = f"logit/{seg_model}/test"
+    cfg.data.test.ann_dir = f"gtFine/{seg_model}/test"
+    cfg.work_dir = f'./work_dirs/anomal_datasets/mlp_softmax_lr_{lr}_epoch_{epoch}_policy_{policy}_unknown_{unknown_ratio}_known_{known_ratio}_seg_model_{seg_model}'
 
     print(f'Config:\n{cfg.pretty_text}')
 
