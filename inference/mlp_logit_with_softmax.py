@@ -57,9 +57,11 @@ if __name__ == "__main__":
         logit = np.load(logit_file_path)
         logit = torch.as_tensor(logit, device="cuda", dtype=torch.float32)
         softmax = torch.nn.functional.softmax(logit, dim=0)
+        logit = (logit - torch.min(logit, dim=0)[0]) / (torch.max(logit, dim=0)[0] - torch.min(logit, dim=0)[0])
+        logit = logit.unsqueeze(dim=0)
         softmax = softmax.unsqueeze(dim=0)
         img_meta = None
-        pred = model.simple_test(softmax, img_meta)[0]
+        pred = model.simple_test(logit, softmax, img_meta)[0]
         gt = cv2.imread(gtFine_file_path, cv2.IMREAD_UNCHANGED).astype(np.uint8)
 
         # generate color images of prediction and gt
