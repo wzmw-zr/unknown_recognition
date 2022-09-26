@@ -13,7 +13,7 @@ from unknown_recognition.core import eval_metrics
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='Decision Tree')
+        description='Logistic Regression')
     parser.add_argument("dataset_dir", help="dataset_dir", type=str)
     parser.add_argument("input_type", help="input_type", type=str)
     args = parser.parse_args()
