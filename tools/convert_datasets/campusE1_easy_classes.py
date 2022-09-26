@@ -31,43 +31,81 @@ Label = namedtuple( 'Label' , [
 
 labels = [
     #       name                    trainId    color
-    Label(  'Road'                 ,      0 ,  (128, 64,128) ),
-    Label(  'Sidewalk'             ,      1 ,  (244, 35,232) ),
-    Label(  'Buildings'            ,      2 ,  ( 70, 70, 70) ),
-    Label(  'Walls'                ,      3 ,  (102,102,156) ),
-    Label(  'Fence'                ,      4 ,  (190,153,153) ),
-    # Label(  'pole'                 ,      5 ,  (153,153,153) ),
-    # Label(  'traffic light'        ,      6 ,  (250,170, 30) ),
-    # Label(  'traffic sign'         ,      7 ,  (220,220,  0) ),
-    # Label(  'vegetation'           ,      8 ,  (107,142, 35) ),
-    # Label(  'terrain'              ,      9 ,  (152,251,152) ),
-    Label(  'Sky'                  ,     10 ,  ( 70,130,180) ),
-    # Label(  'person'               ,     11 ,  (220, 20, 60) ),
-    # Label(  'rider'                ,     12 ,  (255,  0,  0) ),
-    # Label(  'car'                  ,     13 ,  (  0,  0,142) ),
-    # Label(  'truck'                ,     14 ,  (  0,  0, 70) ),
-    Label(  'Bus'                  ,     15 ,  (  0, 60,100) ),
-    # Label(  'train'                ,     16 ,  (  0, 80,100) ),
-    # Label(  'motorcycle'           ,     17 ,  (  0,  0,230) ),
-    # Label(  'bicycle'              ,     18 ,  (119, 11, 32) ),
-    Label(  '__ignore__'           ,    255 ,  (  0,  0,  0) ), 
-    Label(  'unlabeled'            ,    255 ,  (  0,  0,  0) ), 
-    Label(  'Trees'                ,      8 ,  (107,142, 35) ),
-    Label(  'FlowerBeds'           ,      8 ,  (107,142, 35) ),
-    Label(  'Staircase'            ,     19 ,  (111, 74,  0) ), 
-    Label(  'ManholeCover'         ,     19 ,  (111, 74,  0) ), 
-    Label(  'Chairs'               ,     19 ,  (111, 74,  0) ), 
-    Label(  'Curbs'                ,     19 ,  (111, 74,  0) ), 
-    Label(  'Lawn'                 ,     19 ,  (111, 74,  0) ), 
-    Label(  'Posts'                ,     19 ,  (111, 74,  0) ),
+    Label(   'road'                ,      0,  (128, 64,128)),
+    Label(  'sidewalk'             ,      1,  (244, 35,232)),
+    Label(    'curb'               ,      1,  ( 82,  0,255)),
+    Label(  'building'             ,      2,  ( 70, 70, 70)),
+    Label(     'wall'              ,      3,  (102,102,156)),
+    Label(    'fence'              ,      4,  (190,153,153)),
+    Label(     'pole'              ,      5,  (153,153,153)),
+    Label(  'runway'               ,      6,  (153,255,  0)),
+    Label(   'bench'               ,      7,  (194,255,  0)),
+    Label(  'vegetation'           ,      8,  (107,142, 35)),
+    Label(    'pipe'               ,      9,  ( 11,102,255)),
+    Label(    'sky'                ,     10,  ( 70,130,180)),
+    Label( 'pedestrian'            ,     11,  (220, 20, 60)),
+    Label(    'door'               ,     12,  (  8,255, 51)),
+    Label(    'car'                ,     13,  (  0,  0,142)),
+
+    Label(  'dustbin'              ,     14,  (  0,163,255)),
+    Label(   'camera'              ,     15,  (  0,204,255)),
+    Label(  'flowerbed'            ,     16,  (160,150, 20)),
+    Label(    'ramp'               ,     17,  (255,245,  0)),
+    Label(    'belt'               ,     18,  (255, 51,  7)),
+    Label(    'chair'              ,     19,  (204, 70,  3)),
+    Label(   'manhole'             ,     20,  ( 80, 50, 50)),
+    Label(     'lawn'              ,     21,  (  4,250,  7)),
+    Label(     'sign'              ,     22,  (220,220,  0)),
+    Label(  'staircase'            ,     24,  (255,224,  0)),
+    Label(   'hydrant'             ,     25,  (  0,204,255)),
+    Label(    'others'             ,    255,  (  0,  0,  0)),
+    Label(  '__ignore__'           ,    255,  (  0,  0,  0)), 
+    Label(  'unlabeled'            ,    255,  (  0,  0,  0)), 
 ]
 
+label_set = set()
 
 #--------------------------------------------------------------------------------
 # Create dictionaries for a fast lookup
 #--------------------------------------------------------------------------------
 
 # Please refer to the main method below for example usages!
+
+chinese_to_english = {
+    '建筑': "building", 
+    '人行路': "sidewalk", 
+    '其他': "others", 
+    '标识牌': "sign", 
+    '隔离带': "belt", 
+    '其它': "others", 
+    '摄像头': "camera", 
+    '柱子': "pole", 
+    '树灌木丛': "vegetation", 
+    '跑道': "runway", 
+    '门': "door", 
+    '路缘石': "curb", 
+    '井盖': "manhole", 
+    '马路': "road", 
+    '栅栏': "fence", 
+    '椅子': "chair", 
+    '树、灌木丛等': "vegetation", 
+    '水管': "pipe", 
+    '其他类': "others", 
+    '消防栓': "hydrant", 
+    '花坛': "flowerbed", 
+    '草坪': "lawn", 
+    '\ufeff马路': "road", 
+    '天空': "sky", 
+    '坡道': "ramp", 
+    '行人': "pedestrian", 
+    '汽车': "car", 
+    '楼梯': "staircase", 
+    '墙': "wall", 
+    '广告牌': "sign", 
+    '巴士': "car", 
+    '长凳': "bench", 
+    '垃圾箱': "dustbin"
+}
 
 # name to label object
 name2label = { label.name : label for label in labels }
@@ -76,6 +114,8 @@ class Polygon(object):
     def __init__(self, jsonText) -> None:
         # points consists of the polygon
         self.label = jsonText["label"]
+        if self.label in chinese_to_english.keys():
+            self.label = chinese_to_english[self.label]
         self.polygon = [Point(p[0], p[1]) for p in jsonText["points"]]
 
 
@@ -92,6 +132,7 @@ class Annotation(object):
 
 def createLabelImage(annotation, encoding, outline=None):
     # the size of the image
+
     size = ( annotation.imageWidth , annotation.imageHeight )
 
     # the background
@@ -155,7 +196,9 @@ def json2labelImg(json_file, out_image, encoding="trainIds"):
 
 def convert_json_to_label(json_file: str):
     label_file = json_file.replace('.json', '_labelTrainIds.png')
-    print(f"process {json_file}")
+    label_file = label_file.replace(gtFine_dir, out_dir + "/")
+    mmcv.mkdir_or_exist(osp.dirname(label_file))
+    print(f"process {json_file}, generate {label_file}")
     json2labelImg(json_file, label_file, 'trainIds')
 
 
@@ -172,9 +215,12 @@ def parse_args():
 
 def main():
     args = parse_args()
+    global gtFine_dir
+    global out_dir
     gtFine_dir = args.gtFine_dir
     out_dir = args.out_dir if args.out_dir else gtFine_dir
     mmcv.mkdir_or_exist(out_dir)
+
 
     json_files = []
 

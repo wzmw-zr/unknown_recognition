@@ -33,7 +33,7 @@ labels = [
     #       name                    trainId    color
     Label(   'road'                ,      0,  (128, 64,128)),
     Label(  'sidewalk'             ,      1,  (244, 35,232)),
-    Label(    'curb'               ,      1,  ( 82,  0,255)),
+    Label(    'curb'               ,    255,  ( 82,  0,255)),
 
     Label(  'building'             ,    255,  ( 70, 70, 70)),
     Label(     'wall'              ,    255,  (102,102,156)),
