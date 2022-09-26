@@ -1,24 +1,11 @@
 # model settings
 # norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
-    type='UnknownDetectorLogitTop2Softmax',
+    type='UnknownDetectorMaxLogit',
     pretrained=None,
     classifier=dict(
-        type="MLP",
-        input_features_infos=[
-            dict(
-                type="logit",
-                in_channels=19,
-            ),
-            dict(
-                type="top2_distance",
-                in_channels=1,
-            ),
-            dict(
-                type="softmax",
-                in_channels=19
-            )
-        ],
+        type="MLPMaxLogit",
+        in_channels=1,
         hidden_channels=256,
         num_classes=2,
         loss_decode=dict(
