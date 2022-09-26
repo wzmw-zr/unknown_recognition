@@ -26,10 +26,10 @@ def get_norm_layer(norm_type: str, in_channels: int):
 
 
 @CLASSIFIER.register_module()
-class MLPLogit(BaseModule):
+class MLPMaxLogit(BaseModule):
     def __init__(
         self, 
-        in_channels=19,
+        in_channels=1,
         hidden_channels=256,
         num_classes=2,
         loss_decode=dict(
@@ -41,7 +41,7 @@ class MLPLogit(BaseModule):
         init_cfg=None,
         norm=None
     ):
-        super(MLPLogit, self).__init__(init_cfg)
+        super(MLPMaxLogit, self).__init__(init_cfg)
         self.in_channels = in_channels
         self.hidden_channels = hidden_channels
         self.num_classes = num_classes
@@ -90,13 +90,13 @@ class MLPLogit(BaseModule):
         output = self.fc3(output)
         return output
 
-    def forward_train(self, logit: Tensor, img_metas, gt_semantic_seg):
-        seg_logits = self.forward(logit)
+    def forward_train(self, max_logit: Tensor, img_metas, gt_semantic_seg):
+        seg_logits = self.forward(max_logit)
         loss = self.losses(seg_logits, gt_semantic_seg)
         return loss
 
-    def forward_test(self, logit: Tensor, img_metas):
-        return self.forward(logit)
+    def forward_test(self, max_logit: Tensor, img_metas):
+        return self.forward(max_logit)
 
     @force_fp32(apply_to=('seg_logit', ))
     def losses(self, seg_logit, seg_label):

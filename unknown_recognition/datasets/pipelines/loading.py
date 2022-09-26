@@ -208,20 +208,38 @@ class LoadSoftmaxFromLogit(object):
 
 
 @PIPELINES.register_module()
-class LoadTop2LogitDistance(object):
+class LoadMaxLogit(object):
+    """ Load Softmax from Logit value (to save disk space).
+    """
     def __init__(self) -> None:
         pass
 
     def __call__(self, results):
         logit = results.get("logit", None)
-        assert logit is not None,\
+        assert logit is not None, \
             f"logit should not be None"
-        top2 = torch.topk(torch.as_tensor(logit), k=2, dim=0)[0]
-        top2_distance = top2[0: 1, :, :] - top2[1: 2, :, :]
-        results["top2_distance"] = top2_distance
-        results["seg_fields"].append("top2_distance")
+        max_logit = torch.max(torch.as_tensor(logit), dim=0, keepdim=True)[0]
+        results["max_logit"] = max_logit
+        results["seg_fields"].append("max_logit")
         return results
 
+
+@PIPELINES.register_module()
+class LoadSoftmaxDistanceFromLogit(object):
+    """ Load Softmax from Logit value (to save disk space).
+    """
+    def __init__(self) -> None:
+        pass
+
+    def __call__(self, results):
+        logit = results.get("logit", None)
+        assert logit is not None, \
+            f"logit should not be None"
+        softmax = torch.nn.functional.softmax(torch.as_tensor(logit), dim=0)
+        softmax_distance = torch.sqrt(torch.sum(softmax, dim=0, keepdim=True))
+        results["softmax_distance"] = softmax_distance
+        results["seg_fields"].append("softmax_distance")
+        return results
 
 
 @PIPELINES.register_module()

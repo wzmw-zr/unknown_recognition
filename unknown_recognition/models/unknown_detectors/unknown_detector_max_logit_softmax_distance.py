@@ -8,7 +8,7 @@ from .base_unknown_detector import BaseUnknownDetector
 
 
 @UNKNOWN_DETECTOR.register_module()
-class UnknownDetector(BaseUnknownDetector):
+class UnknownDetectorMaxLogitSoftmaxDistance(BaseUnknownDetector):
     """Encoder Decoder segmentors.
 
     EncoderDecoder typically consists of backbone, decode_head, auxiliary_head.
@@ -22,7 +22,7 @@ class UnknownDetector(BaseUnknownDetector):
                  test_cfg=None,
                  pretrained=None,
                  init_cfg=None):
-        super(UnknownDetector, self).__init__(init_cfg)
+        super(UnknownDetectorMaxLogitSoftmaxDistance, self).__init__(init_cfg)
         if pretrained is not None:
             assert classifier.get('pretrained') is None, \
                 'both backbone and segmentor set pretrained weight'
@@ -32,10 +32,10 @@ class UnknownDetector(BaseUnknownDetector):
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
 
-    def _classifier_forward_train(self, logit, softmax, img_metas, gt_semantic_seg):
-        return self.classifier.forward_train(logit, softmax, img_metas, gt_semantic_seg)
+    def _classifier_forward_train(self, max_logit, softmax_distance, img_metas, gt_semantic_seg):
+        return self.classifier.forward_train(max_logit, softmax_distance, img_metas, gt_semantic_seg)
 
-    def forward_train(self, logit, softmax, img_metas, gt_semantic_seg):
+    def forward_train(self, max_logit, softmax_distance, img_metas, gt_semantic_seg):
         """Forward function for training.
 
         Args:
@@ -51,13 +51,13 @@ class UnknownDetector(BaseUnknownDetector):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
-        losses = self._classifier_forward_train(logit, softmax, img_metas, gt_semantic_seg)
+        losses = self._classifier_forward_train(max_logit, softmax_distance, img_metas, gt_semantic_seg)
         return losses
 
-    def _classifier_forward_test(self, logit, softmax, img_meta):
-        return self.classifier.forward_test(logit, softmax, img_meta)
+    def _classifier_forward_test(self, max_logit, softmax_distance, img_meta):
+        return self.classifier.forward_test(max_logit, softmax_distance, img_meta)
 
-    def inference(self, logit, softmax, img_meta, rescale):
+    def inference(self, max_logit, softmax_distance, img_meta, rescale):
         """Inference with slide/whole style.
 
         Args:
@@ -75,15 +75,15 @@ class UnknownDetector(BaseUnknownDetector):
 
         assert self.test_cfg.mode in ['whole']
 
-        seg_logit = self._classifier_forward_test(logit, softmax, img_meta)
+        seg_logit = self._classifier_forward_test(max_logit, softmax_distance, img_meta)
 
         output = F.softmax(seg_logit, dim=1)
 
         return output
 
-    def forward_test(self, logit, softmax, img_meta, rescale=True):
+    def forward_test(self, max_logit, softmax_distance, img_meta, rescale=True):
         """Simple test with single image."""
-        seg_logit = self.inference(logit, softmax, img_meta, rescale)
+        seg_logit = self.inference(max_logit, softmax_distance, img_meta, rescale)
         seg_pred = seg_logit.argmax(dim=1)
         if torch.onnx.is_in_onnx_export():
             # our inference backend only support 4D output
@@ -94,7 +94,7 @@ class UnknownDetector(BaseUnknownDetector):
         seg_pred = list(seg_pred)
         return seg_pred
 
-    def forward(self, logit, softmax, img_metas, return_loss=True, **kwargs):
+    def forward(self, max_logit, softmax_distance, img_metas, return_loss=True, **kwargs):
         """Calls either :func:`forward_train` or :func:`forward_test` depending
         on whether ``return_loss`` is ``True``.
 
@@ -105,12 +105,12 @@ class UnknownDetector(BaseUnknownDetector):
         the outer list indicating test time augmentations.
         """
         if return_loss:
-            return self.forward_train(logit, softmax, img_metas, **kwargs)
+            return self.forward_train(max_logit, softmax_distance, img_metas, **kwargs)
         else:
-            return self.forward_test(logit, softmax, img_metas, **kwargs)
+            return self.forward_test(max_logit, softmax_distance, img_metas, **kwargs)
 
-    def simple_test(self, logit, softmax, img_meta, **kwargs):
-        seg_logit = self.inference(logit, softmax, img_meta, rescale=True)
+    def simple_test(self, max_logit, softmax_distance, img_meta, **kwargs):
+        seg_logit = self.inference(max_logit, softmax_distance, img_meta, rescale=True)
         seg_pred = seg_logit.argmax(dim=1)
         seg_pred = seg_pred.cpu().numpy()
         seg_pred = list(seg_pred)

@@ -26,10 +26,10 @@ def get_norm_layer(norm_type: str, in_channels: int):
 
 
 @CLASSIFIER.register_module()
-class MLPLogit(BaseModule):
+class MLPMaxLogitSoftmaxDistance(BaseModule):
     def __init__(
         self, 
-        in_channels=19,
+        in_channels=2,
         hidden_channels=256,
         num_classes=2,
         loss_decode=dict(
@@ -41,7 +41,7 @@ class MLPLogit(BaseModule):
         init_cfg=None,
         norm=None
     ):
-        super(MLPLogit, self).__init__(init_cfg)
+        super(MLPMaxLogitSoftmaxDistance, self).__init__(init_cfg)
         self.in_channels = in_channels
         self.hidden_channels = hidden_channels
         self.num_classes = num_classes
@@ -78,7 +78,8 @@ class MLPLogit(BaseModule):
             elif isinstance(m, (_BatchNorm, nn.GroupNorm, nn.LayerNorm)):
                 constant_init(m, val=1.0, bias=0.)
 
-    def forward(self, inputs: Tensor):
+    def forward(self, max_logit: Tensor, softmax_distance: Tensor):
+        inputs = torch.concat([max_logit, softmax_distance], dim=1)
         assert inputs.shape[1] == self.in_channels, \
             f"input channels should be {self.in_channels}, but get {inputs.shape[1]}"
         output = self.fc1(inputs)
@@ -90,13 +91,13 @@ class MLPLogit(BaseModule):
         output = self.fc3(output)
         return output
 
-    def forward_train(self, logit: Tensor, img_metas, gt_semantic_seg):
-        seg_logits = self.forward(logit)
+    def forward_train(self, max_logit: Tensor, softmax_distance: Tensor, img_metas, gt_semantic_seg):
+        seg_logits = self.forward(max_logit, softmax_distance)
         loss = self.losses(seg_logits, gt_semantic_seg)
         return loss
 
-    def forward_test(self, logit: Tensor, img_metas):
-        return self.forward(logit)
+    def forward_test(self, max_logit: Tensor, softmax_distance: Tensor, img_metas):
+        return self.forward(max_logit, softmax_distance)
 
     @force_fp32(apply_to=('seg_logit', ))
     def losses(self, seg_logit, seg_label):
